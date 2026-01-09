@@ -162,6 +162,14 @@
                     </div>
                 </div>
             </div>
+            <div id="recent-scans" class="mt-16 hidden">
+    <h3 class="text-2xl font-bold mb-6 text-right">
+        🕘 آخر فحوصاتك
+    </h3>
+
+    <div id="scans-list" class="space-y-4"></div>
+</div>
+
         </section>
 
         <!-- 2. CHECK SELECTION PAGE -->
@@ -245,17 +253,34 @@
                 <div id="result-bar" class="h-full transition-all duration-1000 ease-out w-0"></div>
             </div>
 
-            <div class="bg-card border border-slate-700 rounded-2xl p-6 text-right mb-8">
-                <h4 class="text-lg font-bold mb-4 border-b border-slate-700 pb-2" data-i18n="result_analysis">التحليل والنصائح:</h4>
-                <ul id="result-advice" class="space-y-3 text-slate-300 list-disc list-inside">
-                    <!-- Advice injected -->
-                </ul>
-            </div>
+            <h4 class="text-lg font-bold mb-4 border-b border-slate-700 pb-2" data-i18n="result_analysis">التحليل والنصائح:</h4>
+<ul id="result-advice" class="space-y-3 text-slate-300 list-disc list-inside mb-8">
+    </ul>
 
-            <div class="flex gap-4 justify-center">
-                <button onclick="router.navigate('check')" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition" data-i18n="btn_new_check">فحص جديد</button>
-                <a href="https://www.virustotal.com" target="_blank" class="px-6 py-3 bg-primary hover:bg-blue-600 rounded-lg font-medium transition text-white" data-i18n="btn_vt">افحص بـ VirusTotal</a>
-            </div>
+<div class="space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button id="copyWarningBtn" class="flex items-center justify-center gap-2 px-6 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-2xl transition-all active:scale-95 group">
+            <i data-lucide="copy" class="w-5 h-5 text-slate-400 group-hover:text-white"></i>
+            <span class="font-bold">نسخ التحذير</span>
+        </button>
+
+        <button id="whatsappShareBtn" class="flex items-center justify-center gap-2 px-6 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+            <i data-lucide="message-circle" class="w-5 h-5"></i>
+            <span class="font-bold">مشاركة واتساب</span>
+        </button>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="router.navigate('check')" class="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <span>فحص جديد</span>
+        </button>
+        <a href="https://www.virustotal.com" target="_blank" class="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-blue-600 rounded-xl font-medium transition text-white">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>VirusTotal</span>
+        </a>
+    </div>
+</div>
             
             <div class="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-sm text-yellow-500">
                 <i data-lucide="info" class="w-4 h-4 inline me-1"></i>
@@ -370,76 +395,239 @@
 
         // 2. Data Structure (Questions)
         const quizData = {
-            apk: [
-                { q: "من أين حصلت على الملف؟", options: [
-                    { text: "Google Play Store / متجر رسمي", risk: 0 },
-                    { text: "موقع المطور الرسمي", risk: 10 },
-                    { text: "تيليغرام / واتساب", risk: 40 },
-                    { text: "رابط مباشر من يوتيوب/تعليق", risk: 50 }
-                ]},
-                { q: "هل التطبيق 'مهكر' (Modded) أو يعد بميزات مدفوعة مجاناً؟", options: [
-                    { text: "نعم، يعطيني ميزات Premium", risk: 50 },
-                    { text: "لا، نسخة عادية", risk: 0 },
-                    { text: "لا أعرف", risk: 20 }
-                ]},
-                { q: "ما الصلاحيات التي يطلبها عند التثبيت؟", options: [
-                    { text: "منطقية (مثلاً خريطة تطلب الموقع)", risk: 0 },
-                    { text: "غريبة (مثلاً كشاف يطلب جهات اتصال)", risk: 40 },
-                    { text: "صلاحية 'الوصول لإمكانيات ذوي الاحتياجات الخاصة' (Accessibility)", risk: 60 }
-                ]}
-            ],
-            link: [
-                { q: "كيف يبدو شكل الرابط؟", options: [
-                    { text: "نطاق معروف (google.com, amazon.com)", risk: 0 },
-                    { text: "مختصر (bit.ly, tinyurl)", risk: 20 },
-                    { text: "غريب جداً (ex: a-m-a-z-0-n.xyz)", risk: 50 }
-                ]},
-                { q: "ماذا يطلب الرابط فور فتحه؟", options: [
-                    { text: "تسجيل الدخول (كلمة المرور)", risk: 50 },
-                    { text: "تحميل ملف", risk: 40 },
-                    { text: "مجرد قراءة مقال", risk: 0 }
-                ]},
-                { q: "هل هناك استعجال؟ (مثلاً: حسابك سيغلق، العرض ينتهي الآن)", options: [
-                    { text: "نعم، هناك ضغط شديد", risk: 30 },
-                    { text: "لا، رسالة عادية", risk: 0 }
-                ]}
-            ],
-            message: [
-                { q: "من المرسل؟", options: [
-                    { text: "جهة اتصال مسجلة عندي وتتحدث بأسلوبها المعتاد", risk: 0 },
-                    { text: "رقم غريب / دولي", risk: 30 },
-                    { text: "شخص أعرفه لكن يطلب مالاً أو كود بشكل مفاجئ", risk: 50 }
-                ]},
-                { q: "محتوى الرسالة؟", options: [
-                    { text: "لقد ربحت جائزة / وظيفة", risk: 40 },
-                    { text: "تأكيد هوية / شحنة لم تطلبها", risk: 30 },
-                    { text: "رسالة عادية", risk: 0 }
-                ]}
-            ],
-            account: [
-                { q: "تاريخ إنشاء الحساب؟", options: [
-                    { text: "قديم ولديه نشاط", risk: 0 },
-                    { text: "جديد (هذا الشهر/السنة)", risk: 30 }
-                ]},
-                { q: "الصور والمتابعين؟", options: [
-                    { text: "صور شخصية حقيقية، تفاعل منطقي", risk: 0 },
-                    { text: "صور من جوجل/مشاهير، متابعين وهميين", risk: 40 }
-                ]}
-            ],
-            job: [
-                { q: "كيف تم التواصل؟", options: [
-                    { text: "إيميل رسمي للشركة، لينكدإن", risk: 0 },
-                    { text: "واتساب / تيليغرام مباشرة", risk: 40 }
-                ]},
-                { q: "هل طلبوا رسوماً (للتدريب، للملف، للفيزا)؟", options: [
-                    { text: "نعم، مبلغ بسيط", risk: 60 },
-                    { text: "لا", risk: 0 }
-                ]},
-                { q: "الراتب المعروض؟", options: [
-                    { text: "منطقي للسوق", risk: 0 },
-                    { text: "خيالي جداً مقابل خبرة قليلة", risk: 30 }
-                ]}
-            ]
+apk: [
+    {
+        q: "من أين حصلت على الملف؟",
+        options: [
+            {
+                text: "Google Play Store / متجر رسمي",
+                risk: 0
+            },
+            {
+                text: "موقع المطور الرسمي",
+                risk: 10,
+                reason: "التحميل من خارج المتجر الرسمي يزيد خطر التلاعب بالملف"
+            },
+            {
+                text: "تيليغرام / واتساب",
+                risk: 40,
+                reason: "الملفات المتداولة عبر التطبيقات غير خاضعة لأي فحص أمني"
+            },
+            {
+                text: "رابط مباشر من يوتيوب أو تعليق",
+                risk: 50,
+                reason: "روابط التعليقات تُستغل بكثرة لنشر ملفات ضارة"
+            }
+        ]
+    },
+    {
+        q: "هل التطبيق مهكر أو يعد بميزات مدفوعة مجاناً؟",
+        options: [
+            {
+                text: "نعم، يعطي ميزات Premium مجاناً",
+                risk: 50,
+                reason: "التطبيقات المهكرة غالباً تحتوي برمجيات خبيثة أو تجسس"
+            },
+            {
+                text: "لا، نسخة عادية",
+                risk: 0
+            },
+            {
+                text: "لا أعرف",
+                risk: 20,
+                reason: "عدم معرفة مصدر أو نوع التطبيق يزيد من مستوى الخطر"
+            }
+        ]
+    },
+    {
+        q: "ما الصلاحيات التي يطلبها عند التثبيت؟",
+        options: [
+            {
+                text: "صلاحيات منطقية تتوافق مع وظيفة التطبيق",
+                risk: 0
+            },
+            {
+                text: "صلاحيات غير منطقية",
+                risk: 40,
+                reason: "طلب صلاحيات لا علاقة لها بوظيفة التطبيق مؤشر خطر"
+            },
+            {
+                text: "صلاحية الوصول لإمكانيات ذوي الاحتياجات الخاصة",
+                risk: 60,
+                reason: "صلاحية Accessibility تُستغل للتحكم بالجهاز وسرقة البيانات"
+            }
+        ]
+    }
+],
+
+ link: [
+    {
+        q: "كيف يبدو شكل الرابط؟",
+        options: [
+            {
+                text: "نطاق معروف وواضح",
+                risk: 0
+            },
+            {
+                text: "رابط مختصر",
+                risk: 20,
+                reason: "الروابط المختصرة قد تخفي وجهة خطيرة"
+            },
+            {
+                text: "نطاق غريب أو مقلد",
+                risk: 50,
+                reason: "النطاقات المقلدة تُستخدم في هجمات التصيّد"
+            }
+        ]
+    },
+    {
+        q: "ماذا يطلب الرابط فور فتحه؟",
+        options: [
+            {
+                text: "تسجيل الدخول أو كلمة المرور",
+                risk: 50,
+                reason: "طلب بيانات تسجيل الدخول مؤشر تصيّد واضح"
+            },
+            {
+                text: "تحميل ملف",
+                risk: 40,
+                reason: "تحميل ملفات من روابط غير موثوقة خطر أمني مباشر"
+            },
+            {
+                text: "عرض محتوى فقط",
+                risk: 0
+            }
+        ]
+    },
+    {
+        q: "هل يوجد استعجال أو تهديد؟",
+        options: [
+            {
+                text: "نعم، يوجد ضغط أو تهديد",
+                risk: 30,
+                reason: "الاستعجال يُستخدم لإجبار الضحية على الخطأ"
+            },
+            {
+                text: "لا، لا يوجد ضغط",
+                risk: 0
+            }
+        ]
+    }
+],
+message: [
+    {
+        q: "من المرسل؟",
+        options: [
+            {
+                text: "جهة اتصال معروفة وتكتب بأسلوبها المعتاد",
+                risk: 0
+            },
+            {
+                text: "رقم غريب أو دولي",
+                risk: 30,
+                reason: "الأرقام الغريبة تُستخدم بكثرة في عمليات الاحتيال"
+            },
+            {
+                text: "شخص معروف لكن الطلب غير معتاد",
+                risk: 50,
+                reason: "قد يكون الحساب مخترقاً أو منتحلاً"
+            }
+        ]
+    },
+    {
+        q: "ما محتوى الرسالة؟",
+        options: [
+            {
+                text: "ربحت جائزة أو وظيفة",
+                risk: 40,
+                reason: "الجوائز الوهمية من أشهر أساليب الاحتيال"
+            },
+            {
+                text: "تأكيد حساب أو شحنة لم تطلبها",
+                risk: 30,
+                reason: "رسائل التأكيد الوهمية تهدف لخداع المستخدم"
+            },
+            {
+                text: "رسالة طبيعية",
+                risk: 0
+            }
+        ]
+    }
+],
+ account: [
+    {
+        q: "تاريخ إنشاء الحساب؟",
+        options: [
+            {
+                text: "قديم وله نشاط مستمر",
+                risk: 0
+            },
+            {
+                text: "جديد أو بدون تاريخ واضح",
+                risk: 30,
+                reason: "الحسابات الجديدة تُستخدم غالباً للاحتيال"
+            }
+        ]
+    },
+    {
+        q: "الصور والمتابعين؟",
+        options: [
+            {
+                text: "صور حقيقية وتفاعل منطقي",
+                risk: 0
+            },
+            {
+                text: "صور مسروقة أو متابعين وهميين",
+                risk: 40,
+                reason: "المتابعون الوهميون مؤشر حساب مزيف"
+            }
+        ]
+    }
+],
+job: [
+    {
+        q: "كيف تم التواصل معك؟",
+        options: [
+            {
+                text: "إيميل رسمي أو لينكدإن",
+                risk: 0
+            },
+            {
+                text: "واتساب أو تيليغرام",
+                risk: 40,
+                reason: "الشركات الحقيقية نادراً تستخدم هذه الطرق للتوظيف"
+            }
+        ]
+    },
+    {
+        q: "هل طُلب منك دفع أي مبلغ؟",
+        options: [
+            {
+                text: "نعم، طُلب مبلغ",
+                risk: 60,
+                reason: "طلب المال مقابل وظيفة هو احتيال شبه مؤكد"
+            },
+            {
+                text: "لا",
+                risk: 0
+            }
+        ]
+    },
+    {
+        q: "الراتب المعروض؟",
+        options: [
+            {
+                text: "منطقي حسب الخبرة",
+                risk: 0
+            },
+            {
+                text: "مرتفع جداً وغير منطقي",
+                risk: 30,
+                reason: "الرواتب الخيالية تُستخدم كطُعم للاحتيال"
+            }
+        ]
+    }
+],
         };
 
         // 3. Logic Modules
@@ -474,15 +662,19 @@
             questions: [],
             currentIndex: 0,
             totalScore: 0,
+                reasons: [],
 
-            start: (type) => {
-                quizEngine.type = type;
-                quizEngine.questions = quizData[type];
-                quizEngine.currentIndex = 0;
-                quizEngine.totalScore = 0;
-                router.navigate('quiz');
-                quizEngine.renderQuestion();
-            },
+
+           start: (type) => {
+    quizEngine.type = type;
+    quizEngine.questions = quizData[type];
+    quizEngine.currentIndex = 0;
+    quizEngine.totalScore = 0;
+    quizEngine.reasons = []; // ✅ مهم
+    router.navigate('quiz');
+    quizEngine.renderQuestion();
+},
+
 
             renderQuestion: () => {
                 const qData = quizEngine.questions[quizEngine.currentIndex];
@@ -497,14 +689,21 @@
                     const btn = document.createElement('button');
                     btn.className = "w-full text-right p-4 rounded-xl border border-slate-700 hover:bg-slate-800 hover:border-primary transition flex justify-between items-center group";
                     btn.innerHTML = `<span>${opt.text}</span> <i data-lucide="chevron-left" class="opacity-0 group-hover:opacity-100 transition rtl:rotate-180"></i>`;
-                    btn.onclick = () => quizEngine.answer(opt.risk);
+                    btn.onclick = () => quizEngine.answer(opt.risk, opt.reason);
                     optionsContainer.appendChild(btn);
                 });
+   
+
                 lucide.createIcons();
             },
 
-            answer: (risk) => {
-                quizEngine.totalScore += risk;
+            answer: (risk, reason = null) => {
+    quizEngine.totalScore += risk;
+
+    if (reason) {
+        quizEngine.reasons.push(reason);
+    }
+
                 if (quizEngine.currentIndex < quizEngine.questions.length - 1) {
                     quizEngine.currentIndex++;
                     quizEngine.renderQuestion();
@@ -513,54 +712,196 @@
                 }
             },
 
-            finish: () => {
-                router.navigate('result');
-                const maxScore = quizEngine.questions.length * 50; // approximate max
-                const percentage = Math.min(100, (quizEngine.totalScore / maxScore) * 100);
-                
-                let result = { color: '', title: '', icon: '', advice: [] };
-                
-                // Logic for advice
-                const adviceList = document.getElementById('result-advice');
-                adviceList.innerHTML = '';
+finish: () => {
+    // الانتقال إلى صفحة النتائج
+    router.navigate('result');
 
-                if (quizEngine.totalScore >= 50) {
-                    result.color = 'text-red-500 bg-red-500/10 border-red-500';
-                    result.barColor = 'bg-red-600';
-                    result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_high : i18n.en.risk_high;
-                    result.icon = 'alert-octagon';
-                    adviceList.innerHTML += `<li>${document.documentElement.lang === 'ar' ? 'لا تقم بفتح الرابط أو تثبيت الملف.' : 'Do not open the link or install the file.'}</li>`;
-                    adviceList.innerHTML += `<li>${document.documentElement.lang === 'ar' ? 'امسح الرسالة أو الملف فوراً.' : 'Delete the message or file immediately.'}</li>`;
-                } else if (quizEngine.totalScore >= 20) {
-                    result.color = 'text-yellow-500 bg-yellow-500/10 border-yellow-500';
-                    result.barColor = 'bg-yellow-500';
-                    result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_medium : i18n.en.risk_medium;
-                    result.icon = 'alert-triangle';
-                    adviceList.innerHTML += `<li>${document.documentElement.lang === 'ar' ? 'تأكد من المصدر مرة أخرى.' : 'Double check the source.'}</li>`;
-                    adviceList.innerHTML += `<li>${document.documentElement.lang === 'ar' ? 'استخدم VirusTotal للفحص.' : 'Use VirusTotal to scan.'}</li>`;
-                } else {
-                    result.color = 'text-emerald-500 bg-emerald-500/10 border-emerald-500';
-                    result.barColor = 'bg-emerald-500';
-                    result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_low : i18n.en.risk_low;
-                    result.icon = 'shield-check';
-                    adviceList.innerHTML += `<li>${document.documentElement.lang === 'ar' ? 'يبدو الأمر طبيعياً، لكن كن حذراً.' : 'Seems normal, but stay vigilant.'}</li>`;
-                }
+    // حساب النسبة المئوية للخطر
+    const maxScore = quizEngine.questions.reduce((sum, q) => {
+    const maxRisk = Math.max(...q.options.map(o => o.risk));
+    return sum + maxRisk;
+}, 0);
 
-                // Render Result
-                const iconContainer = document.getElementById('result-icon-container');
-                iconContainer.className = `w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 text-4xl shadow-2xl ${result.color}`;
-                iconContainer.innerHTML = `<i data-lucide="${result.icon}" class="w-12 h-12"></i>`;
-                
-                document.getElementById('result-title').className = `text-4xl font-bold mb-4 ${result.color.split(' ')[0]}`; // text color
-                document.getElementById('result-title').textContent = result.title;
-                
-                const bar = document.getElementById('result-bar');
-                bar.className = `h-full transition-all duration-1000 ease-out w-0 ${result.barColor}`;
-                setTimeout(() => bar.style.width = `${percentage}%`, 100);
+    const percentage = Math.min(100, (quizEngine.totalScore / maxScore) * 100);
 
-                lucide.createIcons();
-            }
+    // تهيئة كائن النتيجة
+    const result = {
+        color: '',
+        barColor: '',
+        title: '',
+        icon: '',
+        advice: []
+    };
+
+    // تحديد قائمة النصائح
+    const adviceList = document.getElementById('result-advice');
+    adviceList.innerHTML = '';
+
+    // إضافة أسباب الخطر إن وجدت
+    if (quizEngine.reasons.length > 0) {
+        adviceList.innerHTML += `
+            <li class="font-bold text-red-400">
+                السبب الرئيسي لارتفاع الخطر:
+            </li>
+        `;
+        quizEngine.reasons.slice(0, 3).forEach(reason => {
+            adviceList.innerHTML += `<li>${reason}</li>`;
+        });
+    }
+
+    // تحديد مستوى الخطر حسب النقاط
+    if (quizEngine.totalScore >= 50) {
+        result.color = 'text-red-500 bg-red-500/10 border-red-500';
+        result.barColor = 'bg-red-600';
+        result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_high : i18n.en.risk_high;
+        result.icon = 'alert-octagon';
+        result.advice.push(
+            document.documentElement.lang === 'ar' ? 'لا تقم بفتح الرابط أو تثبيت الملف.' : 'Do not open the link or install the file.',
+            document.documentElement.lang === 'ar' ? 'امسح الرسالة أو الملف فوراً.' : 'Delete the message or file immediately.'
+        );
+    } else if (quizEngine.totalScore >= 20) {
+        result.color = 'text-yellow-500 bg-yellow-500/10 border-yellow-500';
+        result.barColor = 'bg-yellow-500';
+        result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_medium : i18n.en.risk_medium;
+        result.icon = 'alert-triangle';
+        result.advice.push(
+            document.documentElement.lang === 'ar' ? 'تأكد من المصدر مرة أخرى.' : 'Double check the source.',
+            document.documentElement.lang === 'ar' ? 'استخدم VirusTotal للفحص.' : 'Use VirusTotal to scan.'
+        );
+    } else {
+        result.color = 'text-emerald-500 bg-emerald-500/10 border-emerald-500';
+        result.barColor = 'bg-emerald-500';
+        result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_low : i18n.en.risk_low;
+        result.icon = 'shield-check';
+        result.advice.push(
+            document.documentElement.lang === 'ar' ? 'يبدو الأمر طبيعياً، لكن كن حذراً.' : 'Seems normal, but stay vigilant.'
+        );
+    }
+
+    // عرض النصائح في القائمة
+    result.advice.forEach(advice => {
+        adviceList.innerHTML += `<li>${advice}</li>`;
+        
+    });
+
+    
+
+    // تحديث واجهة المستخدم
+    const iconContainer = document.getElementById('result-icon-container');
+    iconContainer.className = `w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 text-4xl shadow-2xl ${result.color}`;
+    iconContainer.innerHTML = `<i data-lucide="${result.icon}" class="w-12 h-12"></i>`;
+
+    const titleEl = document.getElementById('result-title');
+    titleEl.className = `text-4xl font-bold mb-4 ${result.color.split(' ')[0]}`;
+    titleEl.textContent = result.title;
+
+    const bar = document.getElementById('result-bar');
+    bar.className = `h-full transition-all duration-1000 ease-out w-0 ${result.barColor}`;
+    setTimeout(() => bar.style.width = `${percentage}%`, 100);
+
+    // حفظ النتيجة الأخيرة
+    saveScanResult(quizEngine.type, quizEngine.totalScore, result.title);
+
+    // إعادة تفعيل أيقونات Lucide
+    lucide.createIcons();
+}
+
         };
+        function generateWarningText() {
+    const title = document.getElementById('result-title')?.textContent || '';
+    const lang = document.documentElement.lang;
+
+    if (lang === 'ar') {
+        return `⚠️ تحذير أمني
+
+النتيجة: ${title}
+
+قمت بفحص هذا الرابط أو الملف عبر موقع فحص أمني.
+أنصحك بالحذر قبل الفتح.
+
+🔗 افحص بنفسك:
+${window.location.origin}`;
+    }
+
+    return `⚠️ Security Warning
+
+Result: ${title}
+
+I scanned this link or file using a security scan website.
+Be careful before opening it.
+
+🔗 Scan it yourself:
+${window.location.origin}`;
+}
+
+
+
+        function saveScanResult(type, score, level) {
+    const maxItems = 3;
+    const scans = JSON.parse(localStorage.getItem('isitsafe_scans')) || [];
+
+    const newScan = {
+        type: type,
+        score: score,
+        level: level,
+        date: new Date().toLocaleString(
+            document.documentElement.lang === 'ar' ? 'ar' : 'en'
+        )
+    };
+
+    scans.unshift(newScan);
+
+    if (scans.length > maxItems) {
+        scans.length = maxItems;
+    }
+
+    localStorage.setItem('isitsafe_scans', JSON.stringify(scans));
+}
+
+function renderRecentScans() {
+    const scans = JSON.parse(localStorage.getItem('isitsafe_scans')) || [];
+    const container = document.getElementById('recent-scans');
+    const list = document.getElementById('scans-list');
+
+    if (!container || scans.length === 0) return;
+
+    container.classList.remove('hidden');
+    list.innerHTML = '';
+
+    scans.forEach(scan => {
+        list.innerHTML += `
+            <div class="bg-card border border-slate-700 rounded-xl p-4 flex justify-between items-center">
+                <div class="text-right">
+                    <div class="font-bold">${getScanTypeLabel(scan.type)}</div>
+                    <div class="text-sm text-slate-400">${scan.date}</div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-sm font-bold ${getRiskBadge(scan.level)}">
+                    ${scan.level}
+                </span>
+            </div>
+        `;
+    });
+}
+function getScanTypeLabel(type) {
+    const map = {
+        apk: "فحص ملف APK",
+        link: "فحص رابط",
+        message: "فحص رسالة",
+        account: "فحص حساب",
+        job: "فحص عرض عمل"
+    };
+    return map[type] || type;
+}
+
+function getRiskBadge(level) {
+    if (level.includes('خطر') || level.includes('High')) {
+        return 'bg-red-500/10 text-red-500 border border-red-500/30';
+    }
+    if (level.includes('احذر') || level.includes('Caution')) {
+        return 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30';
+    }
+    return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30';
+}
 
         const langManager = {
             current: 'ar',
@@ -598,8 +939,48 @@
         }
 
         // Init
+ document.getElementById('copyWarningBtn')?.addEventListener('click', () => {
+    const text = generateWarningText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert(document.documentElement.lang === 'ar'
+            ? 'تم نسخ التحذير ✔'
+            : 'Warning copied ✔'
+        );
+    });
+});
+document.getElementById('whatsappShareBtn')?.addEventListener('click', () => {
+    const text = encodeURIComponent(generateWarningText());
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+});
+
+
         lucide.createIcons();
+        renderRecentScans();
+// --- وظيفة زر النسخ الذكي ---
+document.getElementById('copyWarningBtn').onclick = function() {
+    const advice = Array.from(document.querySelectorAll('#result-advice li')).map(li => "• " + li.innerText).join('\n');
+    const title = document.getElementById('result-title').innerText;
+    const fullText = `⚠️ تنبيه أمني من (Is It Safe):\nالنتيجة: ${title}\n\nالنصائح:\n${advice}\n\nافحص دائماً قبل الضغط!`;
+    
+    navigator.clipboard.writeText(fullText).then(() => {
+        const originalContent = this.innerHTML;
+        this.innerHTML = `<i data-lucide="check" class="text-emerald-400"></i><span class="text-emerald-400">تم النسخ!</span>`;
+        lucide.createIcons(); // لتحديث الأيقونة فوراً
+        setTimeout(() => { 
+            this.innerHTML = originalContent; 
+            lucide.createIcons(); 
+        }, 2000);
+    });
+};
+
+// --- وظيفة مشاركة واتساب ---
+document.getElementById('whatsappShareBtn').onclick = function() {
+    const title = document.getElementById('result-title').innerText;
+    const text = encodeURIComponent(`⚠️ انتبه! قمت بفحص رابط/ملف وكانت النتيجة: (${title}).\nتأكد من سلامة روابطك عبر هذا الموقع:\n${window.location.href}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+};
     </script>
+    
 </body>
 
 </html>
