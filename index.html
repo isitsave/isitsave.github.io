@@ -86,6 +86,8 @@
             display: block;
             animation: fadeIn 0.5s ease-out; /* تفعيل الأنيميشن الذي صنعته بالأعلى */
         }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-dark text-slate-100 selection:bg-primary selection:text-white">
@@ -184,12 +186,17 @@
                 </div>
             </div>
             <div id="recent-scans" class="mt-16 hidden">
+                <button onclick="router.navigate('sos')" class="w-full mt-4 p-4 bg-red-600/20 border border-red-600 text-red-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-red-600 hover:text-white transition">
+    <i data-lucide="shield-alert"></i>
+    اضغط هنا إذا كنت تعتقد أنك تعرضت للاختراق!
+</button>
     <h3 class="text-2xl font-bold mb-6 text-right">
         🕘 آخر فحوصاتك
     </h3>
 
     <div id="scans-list" class="space-y-4"></div>
 </div>
+
 
         </section>
 
@@ -269,6 +276,8 @@
             
             <h2 id="result-title" class="text-4xl font-bold mb-4">...</h2>
             <p id="result-link" class="text-sm text-slate-400 break-all mt-2"></p>
+
+            
 
             
             <!-- Risk Meter -->
@@ -366,6 +375,35 @@
                 </p>
             </div>
         </section>
+        <section id="sos" class="page-section bg-red-900/10 p-6 rounded-2xl border border-red-500/30">
+    <div class="text-center mb-6">
+        <h2 class="text-3xl font-bold text-red-500 mb-2">🚨 ماذا تفعل لو تم اختراقك؟</h2>
+        <p class="text-slate-300">اتبع هذه الخطوات فوراً لتقليل الضرر</p>
+    </div>
+
+    <div class="space-y-4 text-right">
+        <div class="bg-slate-800 p-4 rounded-xl border-r-4 border-red-500">
+            <h3 class="font-bold text-white">1. اقطع الاتصال فوراً</h3>
+            <p class="text-sm text-slate-400">أغلق الواي فاي وبيانات الهاتف لمنع المخترق من سحب البيانات.</p>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-xl border-r-4 border-red-500">
+            <h3 class="font-bold text-white">2. تغيير كلمات المرور</h3>
+            <p class="text-sm text-slate-400">من جهاز آخر آمن، قم بتغيير كلمة سر الإيميل، البنك، وحسابات التواصل.</p>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-xl border-r-4 border-red-500">
+            <h3 class="font-bold text-white">3. تفعيل التحقق الثنائي (2FA)</h3>
+            <p class="text-sm text-slate-400">فعل خاصية "رمز التحقق" الذي يصل لهاتفك لضمان عدم دخول المخترق مرة أخرى.</p>
+        </div>
+        <div class="bg-slate-800 p-4 rounded-xl border-r-4 border-red-500">
+            <h3 class="font-bold text-white">4. مراجعة الجلسات النشطة</h3>
+            <p class="text-sm text-slate-400">ادخل لإعدادات الأمان في واتساب وفيسبوك واعمل "تسجيل خروج من جميع الأجهزة".</p>
+        </div>
+    </div>
+
+    <button onclick="router.navigate('home')" class="w-full mt-6 py-3 bg-slate-700 rounded-xl hover:bg-slate-600 transition">
+        عودة للرئيسية
+    </button>
+</section>
 
     </main>
 
