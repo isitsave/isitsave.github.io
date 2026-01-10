@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <meta name="theme-color" content="#0F172A">
 
     <title>Is It Safe? | هل هذا آمن؟  - فحص الروابط والمواقع</title>
     <link rel="icon" type="image/png" href="favicon.png">
@@ -18,7 +18,7 @@
     <meta property="og:url" content="https://isitsave.github.io/">
     <meta property="og:title" content="Is It Safe? | هل هذا آمن؟">
     <meta property="og:description" content="افحص الروابط والمواقع المشبوهة وتأكد من سلامتها قبل الدخول إليها.">
-    <meta property="og:image" content="https://isitsave.github.io/og-image.jpg"> <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:image" content="https://isitsave.github.io/og-image.png"> <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Is It Safe? | هل هذا آمن؟">
     <meta name="twitter:description" content="أداة ذكية لفحص أمان الروابط والمواقع الإلكترونية.">
 
@@ -50,10 +50,12 @@
     </script>
     <style>
         body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #0F172A;
-            color: #F8FAFC;
-        }
+                font-family: 'Cairo', sans-serif;
+                background-color: #0F172A;
+                color: #F8FAFC;
+                scroll-behavior: smooth; /* تجعل التنقل داخل الصفحة ناعماً */
+                overflow-x: hidden; /* لمنع ظهور شريط تمرير عرضي مزعج */
+            }
         /* انتقالات ناعمة */
         .fade-enter {
             animation: fadeIn 0.3s ease-in-out;
@@ -62,12 +64,27 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+                    /* تخصيص شريط التمرير ليتناسب مع التصميم المظلم */
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: #0F172A;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #1E293B;
+                border-radius: 10px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #3B82F6;
+            }
         /* إخفاء الصفحات غير النشطة */
         .page-section {
             display: none;
         }
         .page-section.active {
             display: block;
+            animation: fadeIn 0.5s ease-out; /* تفعيل الأنيميشن الذي صنعته بالأعلى */
         }
     </style>
 </head>
@@ -76,7 +93,7 @@
     <!-- Navbar -->
     <nav class="border-b border-slate-800 bg-dark/80 backdrop-blur-md sticky top-0 z-50">
         <div class="container mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="router.navigate('home')">
+            <div class="flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform" onclick="router.navigate('home')">
                 <i data-lucide="shield-check" class="text-primary w-8 h-8"></i>
                 <span class="text-xl font-bold tracking-wide">Is It Safe?</span>
             </div>
@@ -95,7 +112,7 @@
                 </button>
                 <!-- Mobile Menu Button -->
                 <button class="md:hidden p-2 text-slate-400 hover:text-white" onclick="toggleMobileMenu()">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
+                    <i id="menu-icon" data-lucide="menu" class="w-6 h-6 transition-transform"></i>
                 </button>
             </div>
         </div>
@@ -247,6 +264,8 @@
             </div>
             
             <h2 id="result-title" class="text-4xl font-bold mb-4">...</h2>
+            <p id="result-link" class="text-sm text-slate-400 break-all mt-2"></p>
+
             
             <!-- Risk Meter -->
             <div class="w-full bg-slate-800 h-4 rounded-full mb-8 overflow-hidden relative">
@@ -686,7 +705,8 @@ job: [
                 optionsContainer.innerHTML = '';
                 
                 qData.options.forEach(opt => {
-                    const btn = document.createElement('button');
+                    //const btn = document.createElement('button');
+                    const btn = document.createElement('button'); // أضف هذا السطر أولاً
                     btn.className = "w-full text-right p-4 rounded-xl border border-slate-700 hover:bg-slate-800 hover:border-primary transition flex justify-between items-center group";
                     btn.innerHTML = `<span>${opt.text}</span> <i data-lucide="chevron-left" class="opacity-0 group-hover:opacity-100 transition rtl:rotate-180"></i>`;
                     btn.onclick = () => quizEngine.answer(opt.risk, opt.reason);
@@ -713,18 +733,13 @@ job: [
             },
 
 finish: () => {
-    // الانتقال إلى صفحة النتائج
     router.navigate('result');
 
-    // حساب النسبة المئوية للخطر
-    const maxScore = quizEngine.questions.reduce((sum, q) => {
-    const maxRisk = Math.max(...q.options.map(o => o.risk));
-    return sum + maxRisk;
-}, 0);
+    // حساب الحد الأعلى
+    const maxScore = quizEngine.questions.length * 50; // نفترض أن أقصى خطر للسؤال هو 50, 0);
 
-    const percentage = Math.min(100, (quizEngine.totalScore / maxScore) * 100);
+    const percentage = Math.min(100, Math.max(5, (quizEngine.totalScore / maxScore) * 100));
 
-    // تهيئة كائن النتيجة
     const result = {
         color: '',
         barColor: '',
@@ -733,76 +748,86 @@ finish: () => {
         advice: []
     };
 
-    // تحديد قائمة النصائح
     const adviceList = document.getElementById('result-advice');
     adviceList.innerHTML = '';
 
-    // إضافة أسباب الخطر إن وجدت
     if (quizEngine.reasons.length > 0) {
-        adviceList.innerHTML += `
-            <li class="font-bold text-red-400">
-                السبب الرئيسي لارتفاع الخطر:
-            </li>
-        `;
-        quizEngine.reasons.slice(0, 3).forEach(reason => {
-            adviceList.innerHTML += `<li>${reason}</li>`;
+        adviceList.innerHTML += `<li class="font-bold text-red-400">السبب الرئيسي:</li>`;
+        quizEngine.reasons.slice(0, 3).forEach(r => {
+            adviceList.innerHTML += `<li>${r}</li>`;
         });
     }
 
-    // تحديد مستوى الخطر حسب النقاط
     if (quizEngine.totalScore >= 50) {
         result.color = 'text-red-500 bg-red-500/10 border-red-500';
         result.barColor = 'bg-red-600';
-        result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_high : i18n.en.risk_high;
+        result.title = i18n[document.documentElement.lang].risk_high;
         result.icon = 'alert-octagon';
-        result.advice.push(
-            document.documentElement.lang === 'ar' ? 'لا تقم بفتح الرابط أو تثبيت الملف.' : 'Do not open the link or install the file.',
-            document.documentElement.lang === 'ar' ? 'امسح الرسالة أو الملف فوراً.' : 'Delete the message or file immediately.'
-        );
+        result.advice.push('لا تفتح الرابط أو الملف.');
     } else if (quizEngine.totalScore >= 20) {
         result.color = 'text-yellow-500 bg-yellow-500/10 border-yellow-500';
         result.barColor = 'bg-yellow-500';
-        result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_medium : i18n.en.risk_medium;
+        result.title = i18n[document.documentElement.lang].risk_medium;
         result.icon = 'alert-triangle';
-        result.advice.push(
-            document.documentElement.lang === 'ar' ? 'تأكد من المصدر مرة أخرى.' : 'Double check the source.',
-            document.documentElement.lang === 'ar' ? 'استخدم VirusTotal للفحص.' : 'Use VirusTotal to scan.'
-        );
+        result.advice.push('تحقق من المصدر مرة أخرى.');
     } else {
         result.color = 'text-emerald-500 bg-emerald-500/10 border-emerald-500';
         result.barColor = 'bg-emerald-500';
-        result.title = document.documentElement.lang === 'ar' ? i18n.ar.risk_low : i18n.en.risk_low;
+        result.title = i18n[document.documentElement.lang].risk_low;
         result.icon = 'shield-check';
-        result.advice.push(
-            document.documentElement.lang === 'ar' ? 'يبدو الأمر طبيعياً، لكن كن حذراً.' : 'Seems normal, but stay vigilant.'
-        );
+        result.advice.push('يبدو آمنًا لكن كن حذرًا.');
     }
 
-    // عرض النصائح في القائمة
-    result.advice.forEach(advice => {
-        adviceList.innerHTML += `<li>${advice}</li>`;
-        
-    });
+    result.advice.forEach(a => adviceList.innerHTML += `<li>${a}</li>`);
 
-    
+    document.getElementById('result-title').textContent = result.title;
+    document.getElementById('result-title').className =
+        `text-4xl font-bold mb-4 ${result.color.split(' ')[0]}`;
 
-    // تحديث واجهة المستخدم
-    const iconContainer = document.getElementById('result-icon-container');
-    iconContainer.className = `w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 text-4xl shadow-2xl ${result.color}`;
-    iconContainer.innerHTML = `<i data-lucide="${result.icon}" class="w-12 h-12"></i>`;
-
-    const titleEl = document.getElementById('result-title');
-    titleEl.className = `text-4xl font-bold mb-4 ${result.color.split(' ')[0]}`;
-    titleEl.textContent = result.title;
+    const iconBox = document.getElementById('result-icon-container');
+    iconBox.className =
+        `w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 ${result.color}`;
+    iconBox.innerHTML = `<i data-lucide="${result.icon}" class="w-12 h-12"></i>`;
 
     const bar = document.getElementById('result-bar');
-    bar.className = `h-full transition-all duration-1000 ease-out w-0 ${result.barColor}`;
+    bar.className = `h-full transition-all duration-1000 ${result.barColor}`;
     setTimeout(() => bar.style.width = `${percentage}%`, 100);
 
-    // حفظ النتيجة الأخيرة
-    saveScanResult(quizEngine.type, quizEngine.totalScore, result.title);
+    // 🔗 حفظ ومشاركة
+    const resultId = crypto.randomUUID();
+    const shareUrl = `${location.origin}${location.pathname}#result?id=${resultId}`;
 
-    // إعادة تفعيل أيقونات Lucide
+    document.getElementById('result-link').textContent = shareUrl;
+
+    const stored = JSON.parse(localStorage.getItem('scanResults')) || [];
+    stored.push({
+        id: resultId,
+        ...result,
+        percentage
+    });
+    localStorage.setItem('scanResults', JSON.stringify(stored));
+    fetch('https://api.jsonbin.io/v3/b', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': '$2a$10$TuGTBIwOv1OhAUBE9Ckt4uJVSQSOwATwxCFL3V0i15GeBbOif7URy'
+    },
+    body: JSON.stringify({
+        id: resultId,
+        result
+    })
+})
+.then(res => res.json())
+.then(data => {
+    const binId = data.metadata.id;
+    const publicUrl =
+        `${location.origin}${location.pathname}#result?bin=${binId}`;
+
+    document.getElementById('result-link').textContent = publicUrl;
+});
+
+saveScanResult(quizEngine.type, quizEngine.totalScore, result.title);
+renderRecentScans(); // لتحديث القائمة في الصفحة الرئيسية فوراً
     lucide.createIcons();
 }
 
@@ -834,7 +859,10 @@ Be careful before opening it.
 ${window.location.origin}`;
 }
 
-
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        menu.classList.toggle('hidden');
+        }
 
         function saveScanResult(type, score, level) {
     const maxItems = 3;
@@ -939,19 +967,27 @@ function getRiskBadge(level) {
         }
 
         // Init
- document.getElementById('copyWarningBtn')?.addEventListener('click', () => {
-    const text = generateWarningText();
-    navigator.clipboard.writeText(text).then(() => {
-        alert(document.documentElement.lang === 'ar'
-            ? 'تم نسخ التحذير ✔'
-            : 'Warning copied ✔'
-        );
-    });
-});
-document.getElementById('whatsappShareBtn')?.addEventListener('click', () => {
+        const hash = location.hash;
+if (hash.includes('result?id=')) {
+    const id = new URLSearchParams(hash.split('?')[1]).get('id');
+    const stored = JSON.parse(localStorage.getItem('scanResults')) || [];
+    const found = stored.find(r => r.id === id);
+
+    if (found) {
+        router.navigate('result');
+        document.getElementById('result-title').textContent = found.title;
+
+        const bar = document.getElementById('result-bar');
+        bar.className = `h-full ${found.barColor}`;
+        bar.style.width = `${found.percentage}%`;
+
+        lucide.createIcons();
+    }
+}
+
     const text = encodeURIComponent(generateWarningText());
     window.open(`https://wa.me/?text=${text}`, '_blank');
-});
+
 
 
         lucide.createIcons();
